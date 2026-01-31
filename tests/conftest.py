@@ -1,8 +1,8 @@
-"""Pytest configuration and fixtures for API testing.
+"""Pytest configuration and fixtures for Playwright-based API testing.
 
 Supports:
-1. Regular requests-based API testing (APIClient)
-2. Playwright-based async API testing
+- Playwright async API testing with APIRequestContext
+- Intelligent Builder Intake API endpoints
 """
 import sys
 import os
@@ -21,36 +21,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from api_client import APIClient
 from test_data import TEST_CASES
-
-
-# ============= Regular requests-based fixtures =============
-
-@pytest.fixture(scope="session")
-def base_url():
-    return "https://restful-booker.herokuapp.com"
-
-
-@pytest.fixture(scope="session")
-def client(base_url):
-    return APIClient(base_url)
-
-
-@pytest.fixture(scope="session")
-def auth_token(client):
-    # Restful-booker authentication: POST /auth with username/password returns {token}
-    creds = {"username": "admin", "password": "password123"}
-    resp = client.request("POST", "/auth", json=creds)
-    if resp.status_code != 200:
-        pytest.skip("Could not obtain token from /auth")
-    token = resp.json().get("token")
-    if not token:
-        pytest.skip("Auth succeeded but token not returned")
-    # restful-booker accepts the token via Cookie as well as using it in headers for convenience
-    client.set_token(token)
-    client.session.headers.update({"Cookie": f"token={token}"})
-    return token
 
 
 # ============= Playwright-based fixtures =============
